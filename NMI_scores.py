@@ -14,6 +14,7 @@ def find_NMI(clusters, pts_per_cluster):
     pred_labels = find_labels(prediction, pts_per_cluster)
     NMI = normalized_mutual_info_score(sol_labels, pred_labels)
     print(NMI)
+    return NMI
 
 def find_labels(A, pts_per_cluster):
     labels = [i for i in range(1, sum(pts_per_cluster) + 1)]

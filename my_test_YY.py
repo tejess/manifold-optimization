@@ -38,20 +38,19 @@ def stoch_ball_pblm_uneven(npts_list, dist_cent):
 '''My Functions'''
 
 # Finds and plots solution matrix
-def find_solution_matrix(pblm, gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2)):
-    Ys = pblm.do_path(gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2))
-    i = 0
+def find_solution_matrix(pblm, i=1, gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2)):
+    Ys = pblm.do_path(gamma, eta, rho)
     clusters = find_cluster_assignments(Ys, pblm.k)
-    print(f'Figure {i + 1} \n {clusters}')
+    print(f'Figure {i}: gamma = {gamma}, eta = {eta}, rho = {rho}')
 
     '''Plot Block Structure'''
-    # find_block_Y_ans(Ys, clusters, i)
+    find_block_Y_ans(Ys, clusters, i)
 
     '''Plot Pure X = YY^t matrix'''
-    find_pure_Y_ans(Ys, i)
+    #find_pure_Y_ans(Ys, i)
 
     #clusterings.append(clusters)
-    return clusters
+    return clusters, Ys
 
 
 def find_pure_Y_ans(Y_sol, i):
@@ -82,11 +81,15 @@ def find_cluster_assignments(Y, k):
     for i in range(k):
         dict_of_clusters[f'Cluster {i + 1}'] = []
     j = 1
-    for array in Y:
-        result = np.where(array == np.amax(array))
-        dict_of_clusters[f'Cluster {result[0][0] + 1}'].append(j)
-        j += 1
-    return dict_of_clusters
+    try:
+        for array in Y:
+            result = np.where(array == np.amax(array))
+            dict_of_clusters[f'Cluster {result[0][0] + 1}'].append(j)
+            j+= 1
+        return dict_of_clusters
+    except:
+        print("Index Error")
+        return dict_of_clusters
 
 
 # Saves matrix to an outfile
@@ -115,7 +118,8 @@ def find_YYt(Y):
 def plot_matrix(Y_ans, i):
     plt.matshow(Y_ans)
     plt.colorbar()
-    plt.title(f'Figure {i + 1}')
+    plt.title(f'{i}')
+    plt.xlabel('Wine Data')
     plt.show()
 
 

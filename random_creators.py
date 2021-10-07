@@ -4,7 +4,8 @@ import numpy.random as nrand
 import scipy.linalg as sla
 import scipy.sparse.linalg as spla
 import autograd.numpy as anp
-
+from random import seed
+seed(1)
 from pymanopt.manifolds import Stiefel
 
 def antisym(mat):

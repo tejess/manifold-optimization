@@ -4,8 +4,9 @@ from pymanopt.solvers import SteepestDescent
 import math
 from random import seed
 from random import randint
+
 # seed random number generator
-seed(1)
+#seed(1)
 
 from Y_mani import Y_mani
 from random_creators import dist_mat
@@ -91,7 +92,7 @@ class Cluster_Pblm:
         """
         return lambda Y: a * self.gr_tr(Y) + b * self.gr_neg(Y)
 
-    def run_minimization(self, Y, gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2)):
+    def run_minimization(self, Y, gamma, eta, rho):
 
         X = Y
         Z = Y
@@ -103,38 +104,41 @@ class Cluster_Pblm:
         # Find D matrix
         D = np.zeros((self.n, self.n))
         for i in range(self.n):
-            #print(self.data[i])
+            # print(self.data[i])
             for j in range(self.n):
-                D[i][j] = np.linalg.norm([self.data[i] - self.data[j]], 2)**2
+                D[i][j] = np.linalg.norm([self.data[i] - self.data[j]], 2) ** 2
 
         # Run Algorithm
-        for i in range(1000):
-            for _ in range(15):
-                X = self.M.retr_fast(X, -eta * self.M.proj_fast(X, 2 * D@X + (Lambda + rho * (X - Z))))
-            #print(np.linalg.norm(X.T.dot(X) - np.eye(self.k)))
-            #print(np.linalg.norm(X.dot(X.T).dot(np.ones(self.n)) - np.ones(self.n)))
-            #Y = np.where(Y < 0, 0, X + (1 / rho) * Lambda)
+        for i in range(500):
+            for _ in range(1):
+                try:
+                    X = self.M.retr_fast(X, -eta * self.M.proj_fast(X, 2 * D @ X + (Lambda + rho * (X - Z))))
+                except:
+                    print(f'Iter #{i}: Singular Matrix')
+                    return X
+            # print(np.linalg.norm(X.T.dot(X) - np.eye(self.k)))
+            # print(np.linalg.norm(X.dot(X.T).dot(np.ones(self.n)) - np.ones(self.n)))
+            # Y = np.where(Y < 0, 0, X + (1 / rho) * Lambda)
             Y = np.maximum(0, X + (1 / rho) * Lambda)
             Z = (1 / ((1 / gamma) + rho)) * ((1 / gamma) * Y + Lambda + rho * X)
             Lambda = Lambda + rho * (X - Z)
-            if (i+1) % 10 == 0:
-                print(f'Trace {i+1}: {self.tr(X)}, Norm: {np.linalg.norm(X * (X < 0))}')
+            # if (i+1) % 10 == 0:
+            # print(f'Trace {i+1}: {self.tr(X)}, Norm: {np.linalg.norm(X * (X < 0))}')
             # X_log.append(X)
             # Y_log.append(Y)
         return X
 
-
     def find_initial(self):
         Y0 = np.zeros((self.n, self.k))
+        #seed(1)
         for i in range(self.n):
-            Y0[i][randint(0,self.k-1)] = 1
-        Y0 = Y0 / np.transpose(np.sqrt(np.diag(np.transpose(Y0)@Y0)))
+            Y0[i][randint(0, self.k - 1)] = 1
+        Y0 = Y0 / np.transpose(np.sqrt(np.diag(np.transpose(Y0) @ Y0)))
         return Y0
 
-
-    def do_path(self, gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2)):
-        #Y0 = self.find_initial()
-        Y0 = -np.array(self.M.rand())
-        Ys = self.run_minimization(Y0, gamma=pow(10, -2), eta=pow(10, -4), rho=6*pow(10, 2))
-        print(len(Ys), "x", len(Ys[0]))
+    def do_path(self, gamma, eta, rho):
+        Y0 = self.find_initial()
+        #Y0 = -np.array(self.M.rand())
+        Ys = self.run_minimization(Y0, gamma, eta, rho)
+        print("\n", len(Ys), "x", len(Ys[0]))
         return Ys
